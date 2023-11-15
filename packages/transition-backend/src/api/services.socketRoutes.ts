@@ -146,13 +146,9 @@ export default function (socket: EventEmitter, userId?: number) {
             });
     });
 
-    socket.on(TrRoutingConstants.ROUTE_V1, async (parameters, callback) => {
+    socket.on(TrRoutingConstants.ROUTE, async ({ parameters, hostPort }, callback) => {
         try {
-            const routingResults = await trRoutingService.v1TransitCall(
-                parameters.query,
-                parameters.host || 'http://localhost',
-                parameters.port || Preferences.get('trRouting.port')
-            );
+            const routingResults = await trRoutingService.route(parameters, hostPort);
             callback(Status.createOk(routingResults));
         } catch (error) {
             console.error(error);
@@ -160,9 +156,9 @@ export default function (socket: EventEmitter, userId?: number) {
         }
     });
 
-    socket.on(TrRoutingConstants.ROUTE, async ({ parameters, hostPort }, callback) => {
+    socket.on(TrRoutingConstants.ACCESSIBILITY_MAP, async ({ parameters, hostPort }, callback) => {
         try {
-            const routingResults = await trRoutingService.route(parameters, hostPort);
+            const routingResults = await trRoutingService.accessibilityMap(parameters, hostPort);
             callback(Status.createOk(routingResults));
         } catch (error) {
             console.error(error);

@@ -19,13 +19,17 @@ export enum ErrorCodes {
     NoServiceAtOrigin = 'TRROUTING_NO_ROUTING_NO_SERVICE_FROM_ORIGIN',
     NoServiceAtDestination = 'TRROUTING_NO_ROUTING_NO_SERVICE_TO_DESTINATION',
     ServerNotRunning = 'TRROUTING_SERVER_NOT_RUNNING',
+    NoAccessAtPlace = 'TRROUTING_NOT_ROUTING_NO_ACCESS_AT_PLACE',
+    NoServiceAtPlace = 'TRROUTING_NO_ROUTING_NO_SERVICE_AT_PLACE',
     OtherError = 'TRROUTING_ERROR_UNKNOWN',
     MissingData = 'TRROUTING_MISSING_DATA',
     DataError = 'TRROUTING_INVALID_DATA',
     QueryError = 'TRROUTING_QUERY_ERROR'
 }
 
-const errorCodeByReason = (reason: TrRoutingApi.TrRoutingNoRoutingReason): ErrorCodes => {
+const errorCodeByReason = (
+    reason: TrRoutingApi.TrRoutingNoRoutingReason | TrRoutingApi.TrRoutingV2.NoRoutingAccessibilityReason
+): ErrorCodes => {
     switch (reason) {
     case 'NO_ACCESS_AT_ORIGIN':
         return ErrorCodes.NoAccessAtOrigin;
@@ -37,6 +41,10 @@ const errorCodeByReason = (reason: TrRoutingApi.TrRoutingNoRoutingReason): Error
         return ErrorCodes.NoServiceAtDestination;
     case 'NO_ACCESS_AT_ORIGIN_AND_DESTINATION':
         return ErrorCodes.NoAccessAtOriginAndDestination;
+    case 'NO_ACCESS_AT_PLACE':
+        return ErrorCodes.NoAccessAtPlace;
+    case 'NO_SERVICE_AT_PLACE':
+        return ErrorCodes.NoServiceAtPlace;
     default:
         return ErrorCodes.NoRoutingFound;
     }
@@ -113,6 +121,9 @@ export type TrRoutingResultAlternatives = {
     type: 'withAlternatives';
     alternatives: TrRoutingApi.TrRoutingAlternative[];
 };
+
+// Api agnostic version of the accessibility map result
+// FIXME Not changed since V1, should we revisit?
 export type TrRoutingResultAccessibilityMap = { type: 'nodes'; nodes: TrRoutingApi.TrRoutingApiNode[] };
 
 export type TrRoutingResult = TrRoutingResultPath | TrRoutingResultAlternatives;
@@ -125,36 +136,6 @@ export type TrRoutingRoute = TrRoutingApi.TrRoutingV2.SingleRouteResult & {
 };
 // API agnostic version of the route result
 export type TrRoutingRouteResult = { routes: TrRoutingRoute[]; totalRoutesCalculated: number };
-
-// TODO This is exported because the batch routing needs to call this for result. It shouldn't be, the API should be modified so the caller uses the main TrRoutingService method instead.
-const apiResultToResult = (apiResult: TrRoutingApi.TrRoutingApiResult): TrRoutingResult => {
-    if ('alternatives' in apiResult) {
-        const resultWithAlternatives = apiResult as TrRoutingApi.TrRoutingWithAlternativeResult;
-        return {
-            type: 'withAlternatives',
-            alternatives: resultWithAlternatives.alternatives
-        };
-    }
-    const resultPath = apiResult as TrRoutingApi.TrRoutingPath;
-    return {
-        type: 'path',
-        path: resultPath
-    };
-};
-
-const apiResultToAccessibleMap = (apiResult: TrRoutingApi.TrRoutingApiResult): TrRoutingResultAccessibilityMap => {
-    if ('nodes' in apiResult) {
-        const nodeResults = apiResult as TrRoutingApi.TrRoutingAccessibleMap;
-        return {
-            type: 'nodes',
-            nodes: nodeResults.nodes
-        };
-    }
-    return {
-        type: 'nodes',
-        nodes: []
-    };
-};
 
 const apiV2ToRouteResult = (apiResult: TrRoutingApi.TrRoutingV2.RouteSuccessResult): TrRoutingRouteResult => {
     // For each route to be self contained, concatenate the query with each result
@@ -173,6 +154,25 @@ const apiV2ToRouteResult = (apiResult: TrRoutingApi.TrRoutingV2.RouteSuccessResu
     };
 };
 
+const apiV2ToAccessMapResult = (
+    apiResult: TrRoutingApi.TrRoutingV2.AccessibilityMapSuccessResult
+): TrRoutingResultAccessibilityMap => {
+    // For each route to be self contained, concatenate the query with each result
+    const allNodes = apiResult.result.nodes.map((node) => ({
+        departureTime: undefined,
+        departureTimeSeconds: apiResult.query.timeType === 1 ? node.nodeTime : undefined,
+        arrivalTime: undefined,
+        arrivalTimeSeconds: apiResult.query.timeType === 0 ? node.nodeTime : undefined,
+        id: node.nodeUuid,
+        numberOfTransfers: node.numberOfTransfers,
+        totalTravelTimeSeconds: node.totalTravelTime
+    }));
+    return {
+        type: 'nodes',
+        nodes: allNodes
+    };
+};
+
 type ApiCall = { socketRoute?: string; url: string };
 const apiCalls = {
     route: {
@@ -180,9 +180,9 @@ const apiCalls = {
         url: TrRoutingApi.TrRoutingConstants.FETCH_ROUTE_URL
     },
     summary: { url: TrRoutingApi.TrRoutingConstants.FETCH_SUMMARY_URL },
-    legacyCall: {
-        socketRoute: TrRoutingApi.TrRoutingConstants.ROUTE_V1,
-        url: TrRoutingApi.TrRoutingConstants.FETCH_ROUTE_V1_URL
+    accessibilityMap: {
+        socketRoute: TrRoutingApi.TrRoutingConstants.ACCESSIBILITY_MAP,
+        url: TrRoutingApi.TrRoutingConstants.FETCH_ACCESSIBILITY_MAP_URL
     }
 };
 
@@ -215,148 +215,6 @@ export class TrRoutingService {
         } else {
             return this.callTrRoutingWithFetch(apiCall.url, params);
         }
-    }
-
-    // TODO Parameters should be converted to a query in the backend, not here
-    private paramsToQuery(params: RoutingQueryOptions): string {
-        const trRoutingQueryArray: string[] = [
-            `min_waiting_time_seconds=${params.minWaitingTime}`,
-            `max_access_travel_time_seconds=${params.maxAccessTravelTime}`,
-            `max_egress_travel_time_seconds=${params.maxEgressTravelTime}`,
-            `max_transfer_travel_time_seconds=${params.maxTransferTravelTime}`,
-            `max_travel_time_seconds=${params.maxTravelTime}`,
-            `scenario_uuid=${params.scenarioId}`
-        ];
-        if (params.originDestination) {
-            trRoutingQueryArray.push(
-                `origin=${params.originDestination[0].geometry.coordinates[1]},${params.originDestination[0].geometry.coordinates[0]}`
-            );
-
-            trRoutingQueryArray.push(
-                `destination=${params.originDestination[1].geometry.coordinates[1]},${params.originDestination[1].geometry.coordinates[0]}`
-            );
-        } else if (params.odTripUuid) {
-            trRoutingQueryArray.push(`od_trip_uuid=${params.odTripUuid}`);
-        }
-        if (params.alternatives !== undefined) {
-            trRoutingQueryArray.push(`alternatives=${params.alternatives ? '1' : '0'}`);
-        }
-        trRoutingQueryArray.push(
-            params.timeOfTripType === 'departure'
-                ? `departure_time_seconds=${params.timeOfTrip}`
-                : `arrival_time_seconds=${params.timeOfTrip}`
-        );
-        if (params.maxFirstWaitingTime) {
-            trRoutingQueryArray.push(`max_first_waiting_time_seconds=${params.maxFirstWaitingTime}`);
-        }
-        return trRoutingQueryArray.join('&');
-    }
-
-    // TODO Parameters should be converted to a query in the backend, not here
-    private accessMapParamsToQuery(params: AccessibilityMapQueryOptions): string {
-        const trRoutingQueryArray: string[] = [
-            `min_waiting_time_seconds=${params.minWaitingTime}`,
-            `max_access_travel_time_seconds=${params.maxAccessTravelTime}`,
-            `max_egress_travel_time_seconds=${params.maxEgressTravelTime}`,
-            `max_transfer_travel_time_seconds=${params.maxTransferTravelTime}`,
-            `max_travel_time_seconds=${params.maxTravelTime}`,
-            `scenario_uuid=${params.scenarioId}`,
-            'all_nodes=1'
-        ];
-        const accessibleNodes =
-            params.accessibleNodes && params.accessibleNodes.ids.length === params.accessibleNodes.durations.length
-                ? params.accessibleNodes
-                : undefined;
-        if (params.timeOfTripType === 'departure') {
-            trRoutingQueryArray.push(
-                `origin=${params.location.geometry.coordinates[1]},${params.location.geometry.coordinates[0]}`
-            );
-            trRoutingQueryArray.push(`departure_time_seconds=${params.timeOfTrip}`);
-            if (accessibleNodes) {
-                trRoutingQueryArray.push(`access_node_uuids=${accessibleNodes.ids.join(',')}`);
-                trRoutingQueryArray.push(
-                    `access_node_travel_times=${accessibleNodes.durations.map(Math.floor).join(',')}`
-                );
-            }
-        } else {
-            trRoutingQueryArray.push(
-                `destination=${params.location.geometry.coordinates[1]},${params.location.geometry.coordinates[0]}`
-            );
-            trRoutingQueryArray.push(`arrival_time_seconds=${params.timeOfTrip}`);
-            if (accessibleNodes) {
-                trRoutingQueryArray.push(`egress_node_uuids=${accessibleNodes.ids.join(',')}`);
-                trRoutingQueryArray.push(
-                    `egress_node_travel_times=${accessibleNodes.durations.map(Math.floor).join(',')}`
-                );
-            }
-        }
-        if (params.maxFirstWaitingTime) {
-            trRoutingQueryArray.push(`max_first_waiting_time_seconds=${params.maxFirstWaitingTime}`);
-        }
-        return trRoutingQueryArray.join('&');
-    }
-
-    // FIXME tahini: Type the options
-    private async internalRouteV1(
-        queryString: string,
-        options: { [key: string]: unknown } = {}
-    ): Promise<TrRoutingApi.TrRoutingApiResult> {
-        const responseStatus = await this.callTrRouting<
-            { query: string; [key: string]: any },
-            TrRoutingApi.TrRoutingApiResult
-        >(apiCalls.legacyCall, {
-            query: queryString,
-            ...options
-        });
-        if (Status.isStatusError(responseStatus)) {
-            this.handleErrorStatus(responseStatus);
-        }
-        const routingResult = Status.unwrap(responseStatus);
-        if (TrRoutingApi.isNoRouting(routingResult)) {
-            const reason = routingResult.reason;
-            throw new TrError(
-                'cannot calculate transit route with trRouting: no_routing_found',
-                reason !== undefined ? errorCodeByReason(reason) : ErrorCodes.NoRoutingFound,
-                `transit:transitRouting:errors:${reason !== undefined ? reason : 'NoResultFound'}`
-            );
-        } else if (routingResult.status === 'data_error') {
-            throw new TrError(
-                `cannot calculate transit route with trRouting: ${
-                    (routingResult as TrRoutingApi.TrRoutingErrorWithCode).status
-                }`,
-                ErrorCodes.DataError,
-                'transit:transitRouting:errors:DataError'
-            );
-        } else if (routingResult.status === 'error' && routingResult.error && (routingResult.error as any).code) {
-            // Any error status from the application in the v1 route
-            const errorCode = (routingResult.error as any).code;
-            if (errorCode.startsWith('MISSING_DATA_')) {
-                throw new TrError(
-                    `cannot calculate transit route with trRouting: ${errorCode}`,
-                    ErrorCodes.MissingData,
-                    `transit:transitRouting:errors:${errorCode}`
-                );
-            }
-            throw new TrError(`cannot handle call to trRouting: ${errorCode}`, ErrorCodes.OtherError, {
-                text: 'transit:transitRouting:errors:TrRoutingServerError',
-                params: { error: String(errorCode || '-') }
-            });
-        } else if (routingResult.status !== 'success' && routingResult.status !== undefined) {
-            // FIXME: the accessible map query response does not return a status, so if undefined, then it's ok. but it needs to be fixed in trRouting
-            const routingError = routingResult as TrRoutingApi.TrRoutingError;
-            // FIXME: There is a status, but it is not one that is known. Display it for now.
-            console.log(`Unknown error status returned from trRouting: ${JSON.stringify(routingResult)}`);
-            throw new TrError(
-                `cannot calculate transit route with trRouting: ${routingError.status}`,
-                ErrorCodes.OtherError,
-                {
-                    text: 'transit:transitRouting:errors:TrRoutingServerError',
-                    params: { error: routingError.error ? routingError.error.toString() : '-' }
-                }
-            );
-        }
-
-        return routingResult;
     }
 
     // Throw the appropriate error if the status is erroneous
@@ -445,13 +303,41 @@ export class TrRoutingService {
         });
     }
 
-    // FIXME tahini: Type the options
-    public async routeV1(
-        params: RoutingQueryOptions,
-        options: { [key: string]: unknown } = {}
-    ): Promise<TrRoutingResult> {
-        const routingResult = await this.internalRouteV1(this.paramsToQuery(params), options);
-        return apiResultToResult(routingResult);
+    private handleAccessMapResponse(
+        routingResult: TrRoutingApi.TrRoutingV2.AccessibilityMapResponse
+    ): TrRoutingResultAccessibilityMap {
+        if (routingResult.status === 'success') {
+            return apiV2ToAccessMapResult(routingResult);
+        }
+        if (TrRoutingApi.TrRoutingV2.isAccessMapNoRouting(routingResult)) {
+            // No routing, throw error with reason
+            const reason = routingResult.reason;
+            throw new TrError(
+                'cannot calculate accessible nodes with trRouting: no_routing_found',
+                reason !== undefined ? errorCodeByReason(reason) : ErrorCodes.NoRoutingFound,
+                `transit:transitRouting:errors:${reason !== undefined ? reason : 'NoResultFound'}`
+            );
+        } else if (routingResult.status === 'data_error') {
+            const isMissingData = routingResult.errorCode.startsWith('MISSING_DATA_');
+            // Data error on the server, data may be missing
+            throw new TrError(
+                `cannot calculate accessible nodes with trRouting because of an error on server: ${routingResult.errorCode}`,
+                isMissingData ? ErrorCodes.MissingData : ErrorCodes.DataError,
+                `transit:transitRouting:errors:${isMissingData ? routingResult.errorCode : 'DataError'}`
+            );
+        } else if (routingResult.status === 'query_error') {
+            throw new TrError(
+                `cannot calculate accessible nodes with trRouting because of a query error: ${routingResult.errorCode}`,
+                ErrorCodes.QueryError,
+                `transit:transitRouting:errors:${routingResult.errorCode}`
+            );
+        }
+        console.log('Cannot calculate accessible nodes with trRouting: unknown response status', routingResult);
+        // throw unknown error
+        throw new TrError('cannot calculate accessible nodes with trRouting: unknown error', ErrorCodes.OtherError, {
+            text: 'transit:transitRouting:errors:TrRoutingServerError',
+            params: { error: '-' }
+        });
     }
 
     public async route(
@@ -469,13 +355,19 @@ export class TrRoutingService {
         return this.handleRouteResponse(routingResult);
     }
 
-    // TODO Document the API of trRouting and make sure this method should really be a separate one
     public async accessibleMap(
-        params: AccessibilityMapQueryOptions,
-        options: { [key: string]: unknown } = {}
+        params: TrRoutingApi.AccessibilityMapQueryOptions,
+        options: { hostPort?: TrRoutingApi.HostPort; [key: string]: unknown } = {}
     ): Promise<TrRoutingResultAccessibilityMap> {
-        const routingResult = await this.internalRouteV1(this.accessMapParamsToQuery(params), options);
-        return apiResultToAccessibleMap(routingResult);
+        const responseStatus = await this.callTrRouting<
+            { parameters: TrRoutingApi.AccessibilityMapQueryOptions; hostPort?: TrRoutingApi.HostPort },
+            TrRoutingApi.TrRoutingV2.AccessibilityMapResponse
+        >(apiCalls.accessibilityMap, { parameters: params, hostPort: options?.hostPort });
+        if (Status.isStatusError(responseStatus)) {
+            this.handleErrorStatus(responseStatus);
+        }
+        const accessMapResponse = Status.unwrap(responseStatus);
+        return this.handleAccessMapResponse(accessMapResponse);
     }
 
     public async summary(

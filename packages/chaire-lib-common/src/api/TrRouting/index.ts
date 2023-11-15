@@ -26,7 +26,6 @@ export class TrRoutingConstants {
      * @memberof TrRoutingConstants
      */
     static readonly ROUTE = 'service.trRouting.route';
-    static readonly ROUTE_V1 = 'service.trRouting.routeV1';
     static readonly UPDATE_CACHE = 'service.trRouting.updateCache';
     /**
      * Socket route name to call a batch routing calculation. It takes
@@ -72,15 +71,6 @@ export class TrRoutingConstants {
      */
     static readonly FETCH_ROUTE_URL = '/trRouting/route';
     /**
-     * Relative URL to use when fetching a route request from the server. It
-     * will return a {@link Status} with a
-     * {@link TrRoutingTypes.TrRoutingApiResult} on success
-     *
-     * @static
-     * @memberof TrRoutingConstants
-     */
-    static readonly FETCH_ROUTE_V1_URL = '/trRouting/routeV1';
-    /**
      * Relative URL to use when fetching a summary request from the server. It
      * will return a {@link Status} with a {@link TrRoutingV2.SummaryResponse} on
      * success
@@ -89,4 +79,24 @@ export class TrRoutingConstants {
      * @memberof TrRoutingConstants
      */
     static readonly FETCH_SUMMARY_URL = '/trRouting/summary';
+    /**
+     * Socket route name to call an accessibility map calculation. It
+     * takes a parameter of type {@link TrRoutingTypes.AccessibilityMapQueryOptions}
+     * and will return a {@link Status} with a {@link TrRoutingV2.AccessibilityMapResponse}
+     * on success
+     *
+     * @static
+     * @memberof TrRoutingConstants
+     */
+    static readonly ACCESSIBILITY_MAP = 'service.trRouting.accessibilityMap';
+    /**
+     * Relative URL to use when fetching an accessibility map request from the
+     * server. It takes a parameter of type
+     * {@link TrRoutingTypes.AccessibilityMapQueryOptions} and will return a
+     * {@link Status} with a {@link TrRoutingV2.AccessibilityMapResponse} on success
+     *
+     * @static
+     * @memberof TrRoutingConstants
+     */
+    static readonly FETCH_ACCESSIBILITY_MAP_URL = '/trRouting/accessibilityMap';
 }
