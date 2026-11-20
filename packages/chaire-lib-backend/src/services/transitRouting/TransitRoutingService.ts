@@ -43,6 +43,8 @@ const errorCodeByReason = (
         return ErrorCodes.NoAccessAtPlace;
     case 'NO_SERVICE_AT_PLACE':
         return ErrorCodes.NoServiceAtPlace;
+    case 'NO_ROUTING_WITHIN_MAX_NUMBER_OF_TRANSFERS':
+        return ErrorCodes.NoRoutingWithinMaxNumberOfTransfers;
     default:
         return ErrorCodes.NoRoutingFound;
     }
@@ -254,6 +256,7 @@ class TransitRoutingService {
         params: TrRoutingApi.TransitRouteQueryOptions,
         hostPort?: TrRoutingApi.HostPort
     ): Promise<TrRoutingRouteResult> {
+        console.log("Hello", params);
         const responseStatus = await this.callRoute({ parameters: params, hostPort });
         if (Status.isStatusError(responseStatus)) {
             this.handleErrorStatus(responseStatus);

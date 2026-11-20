@@ -370,6 +370,7 @@ const defaultPreferences: PreferencesModel = {
                 withAlternatives: false,
                 departureTimeSecondsSinceMidnight: 28800,
                 arrivalTimeSecondsSinceMidnight: null,
+                maxNumberOfTransfers: null,
                 minWaitingTimeSeconds: 180,
                 maxTransferTravelTimeSeconds: 600,
                 maxAccessEgressTravelTimeSeconds: 900,

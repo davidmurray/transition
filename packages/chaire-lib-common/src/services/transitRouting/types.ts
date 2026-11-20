@@ -9,6 +9,7 @@ import type * as TrRoutingApi from '../../api/TrRouting';
 
 export enum ErrorCodes {
     NoRoutingFound = 'TRROUTING_NO_ROUTING_FOUND',
+    NoRoutingWithinMaxNumberOfTransfers = 'TRROUTING_NO_ROUTING_WITHIN_MAX_NUMBER_OF_TRANSFERS',
     NoAccessAtOrigin = 'TRROUTING_NO_ROUTING_NO_ACCESS_AT_ORIGIN',
     NoAccessAtDestination = 'TRROUTING_NOT_ROUTING_NO_ACCESS_AT_DESTINATION',
     NoAccessAtOriginAndDestination = 'TRROUTING_NOT_ROUTING_NO_ACCESS_AT_ORIGIN_AND_DESTINATION',
@@ -36,6 +37,10 @@ interface TrRoutingBaseQueryOptions {
      * Maximum walking time to reach destination, in seconds
      */
     maxEgressTravelTime: number;
+    /**
+     * Maximum number of transfers
+     */
+    maxNumberOfTransfers?: number;
     /**
      * Maximum transfer time, in seconds
      */

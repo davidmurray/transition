@@ -85,6 +85,7 @@ export const getAttributesOrDefault = (attributes: Partial<AccessibilityMapAttri
         locationGeojson: attributes.locationGeojson,
         minWaitingTimeSeconds: attributes.minWaitingTimeSeconds || 180,
         maxAccessEgressTravelTimeSeconds: attributes.maxAccessEgressTravelTimeSeconds || 900,
+        maxNumberOfTransfers: attributes.maxNumberOfTransfers || -1,
         maxTransferTravelTimeSeconds: attributes.maxTransferTravelTimeSeconds || 900,
         walkingSpeedMps: attributes.walkingSpeedMps || 5.0 / 3.6,
         walkingSpeedFactor: attributes.walkingSpeedFactor,
@@ -116,6 +117,7 @@ export class TransitAccessibilityMapCalculator {
             minWaitingTime: number;
             maxAccessTravelTime: number;
             maxEgressTravelTime: number;
+            maxNumberOfTransfers: number;
             maxTransferTravelTime: number;
             scenarioId: string;
         },
@@ -156,6 +158,7 @@ export class TransitAccessibilityMapCalculator {
             minWaitingTime: attributes.minWaitingTimeSeconds,
             maxAccessTravelTime: attributes.maxAccessEgressTravelTimeSeconds,
             maxEgressTravelTime: attributes.maxAccessEgressTravelTimeSeconds,
+            maxNumberOfTransfers: attributes.maxNumberOfTransfers,
             maxTransferTravelTime: attributes.maxTransferTravelTimeSeconds,
             scenarioId: attributes.scenarioId as string
             // TODO needed?

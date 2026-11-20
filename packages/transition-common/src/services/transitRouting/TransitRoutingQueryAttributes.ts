@@ -27,6 +27,13 @@ export const validateTrBaseAttributes = (
             errors.push('transit:transitRouting:errors:AccessEgressTravelTimeSecondsNoNegative');
         }
     }
+    const maxNumberOfTransfers = attributes.maxNumberOfTransfers;
+    if (maxNumberOfTransfers !== undefined) {
+        if (maxNumberOfTransfers < 0) {
+            valid = false;
+            errors.push('transit:transitRouting:errors:MaximumNumberOfTransfersNoNegative');
+        }
+    }
     const maxTransferTime = attributes.maxTransferTravelTimeSeconds;
     if (maxTransferTime !== undefined) {
         if (maxTransferTime > MAX_MAX_TRANSFER_TIME) {

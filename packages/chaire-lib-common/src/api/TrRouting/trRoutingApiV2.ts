@@ -70,6 +70,7 @@ export type SummaryResponse = SummarySuccessResult | DataError | RouteQueryError
 
 export type NoRoutingRouteReason =
     | 'NO_ROUTING_FOUND'
+    | 'NO_ROUTING_WITHIN_MAX_NUMBER_OF_TRANSFERS'
     | 'NO_ACCESS_AT_ORIGIN'
     | 'NO_ACCESS_AT_DESTINATION'
     | 'NO_ACCESS_AT_ORIGIN_AND_DESTINATION'

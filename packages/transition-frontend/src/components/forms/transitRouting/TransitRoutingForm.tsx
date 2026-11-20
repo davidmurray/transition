@@ -56,6 +56,7 @@ const TransitRoutingForm: React.FC<TransitRoutingFormProps> = (props) => {
         routingModes: transitRouting.attributes.routingModes || ['transit'],
         minWaitingTimeSeconds: transitRouting.attributes.minWaitingTimeSeconds,
         maxAccessEgressTravelTimeSeconds: transitRouting.attributes.maxAccessEgressTravelTimeSeconds,
+        maxNumberOfTransfers: transitRouting.attributes.maxNumberOfTransfers,
         maxTransferTravelTimeSeconds: transitRouting.attributes.maxTransferTravelTimeSeconds,
         maxFirstWaitingTimeSeconds: transitRouting.attributes.maxFirstWaitingTimeSeconds,
         maxTotalTravelTimeSeconds: transitRouting.attributes.maxTotalTravelTimeSeconds,

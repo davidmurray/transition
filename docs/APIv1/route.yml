@@ -72,6 +72,10 @@ routeTransitRequest:
       type: number
       description: "The minimum time to wait at a stop/station, in seconds, to cope with uncertainties in the vehicle arrival times. Suggested value: 180"
       example: 180
+    maxNumberOfTransfers: 
+      type: number
+      description: Maximum number of transfers in a trip. Empty means no limit.
+      example: 2
     maxTransferTravelTimeSeconds: 
       type: number
       description: Maximum time, in seconds, for each transfer between stop/station during the trip.

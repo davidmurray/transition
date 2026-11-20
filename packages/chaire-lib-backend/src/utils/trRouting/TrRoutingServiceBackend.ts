@@ -87,6 +87,9 @@ class TrRoutingServiceBackend {
         if (parameters.maxEgressTravelTime) {
             trRoutingQueryArray.push(`max_egress_travel_time=${parameters.maxEgressTravelTime}`);
         }
+        if (parameters.maxNumberOfTransfers) {
+            trRoutingQueryArray.push(`max_number_of_transfers=${parameters.maxNumberOfTransfers}`);
+        }
         if (parameters.maxTransferTravelTime) {
             trRoutingQueryArray.push(`max_transfer_travel_time=${parameters.maxTransferTravelTime}`);
         }
@@ -116,6 +119,9 @@ class TrRoutingServiceBackend {
         }
         if (parameters.maxEgressTravelTime) {
             trRoutingQueryArray.push(`max_egress_travel_time=${parameters.maxEgressTravelTime}`);
+        }
+        if (parameters.maxNumberOfTransfers) {
+            trRoutingQueryArray.push(`max_number_of_transfers=${parameters.maxNumberOfTransfers}`);
         }
         if (parameters.maxTransferTravelTime) {
             trRoutingQueryArray.push(`max_transfer_travel_time=${parameters.maxTransferTravelTime}`);

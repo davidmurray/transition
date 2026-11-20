@@ -39,6 +39,7 @@ export const getTransitRouteQueryOptionsOrDefault = (
     minWaitingTime: attributes.minWaitingTimeSeconds || 180,
     maxAccessTravelTime: attributes.maxAccessEgressTravelTimeSeconds || 900,
     maxEgressTravelTime: attributes.maxAccessEgressTravelTimeSeconds || 900,
+    maxNumberOfTransfers: attributes.maxNumberOfTransfers || -1,
     maxTransferTravelTime: attributes.maxTransferTravelTimeSeconds || 900,
     maxTravelTime: attributes.maxTotalTravelTimeSeconds || 10800,
     alternatives: attributes.withAlternatives || false,

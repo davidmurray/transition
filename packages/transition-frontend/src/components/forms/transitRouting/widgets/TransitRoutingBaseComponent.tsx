@@ -7,11 +7,13 @@
 import React from 'react';
 import { withTranslation, type WithTranslation } from 'react-i18next';
 import _toString from 'lodash/toString';
+import { _toInteger } from 'chaire-lib-common/lib/utils/LodashExtensions';
 
 import InputStringFormatted from 'chaire-lib-frontend/lib/components/input/InputStringFormatted';
 import InputWrapper from 'chaire-lib-frontend/lib/components/input/InputWrapper';
 import type { TransitRoutingBaseAttributes } from 'chaire-lib-common/lib/services/routing/types';
 import { secondsToMinutes, minutesToSeconds } from 'chaire-lib-common/lib/utils/DateTimeUtils';
+import { parseIntOrNull } from 'chaire-lib-common/lib/utils/MathUtils';
 
 export interface TransitRoutingBaseComponentProps extends WithTranslation {
     attributes: TransitRoutingBaseAttributes;
@@ -81,6 +83,22 @@ const TransitRoutingBaseComponent: React.FunctionComponent<TransitRoutingBaseCom
                     onValueUpdated={(value) => props.onValueChange('maxTransferTravelTimeSeconds', value)}
                     stringToValue={minutesToSeconds}
                     valueToString={(val) => _toString(secondsToMinutes(val))}
+                    type={'number'}
+                    min={0}
+                />
+            </InputWrapper>
+            <InputWrapper
+                smallInput={true}
+                label={props.t('transit:transitRouting:MaximumNumberOfTransfers')}
+                help={props.t('transit:transitRouting:MaximumNumberOfTransfersHelp')}
+            >
+                <InputStringFormatted
+                    id={'formFieldTransitRoutingMaximumNumberOfTransfers'}
+                    disabled={disabled}
+                    value={props.attributes.maxNumberOfTransfers}
+                    onValueUpdated={(value) => props.onValueChange('maxNumberOfTransfers', value)}
+                    stringToValue={parseIntOrNull}
+                    valueToString={(val) => _toString(parseIntOrNull(val))}
                     type={'number'}
                     min={0}
                 />

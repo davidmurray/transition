@@ -21,6 +21,7 @@ export type SummaryQueryAttributes = {
     minWaitingTimeSeconds?: number;
     maxAccessTravelTimeSeconds?: number;
     maxEgressTravelTimeSeconds?: number;
+    maxNumberOfTransfers?: number;
     maxTransferTravelTimeSeconds?: number;
     maxTotalTravelTimeSeconds?: number;
     maxFirstWaitingTimeSeconds?: number;

@@ -32,6 +32,7 @@ export type RoutingQueryAttributes = {
 export type TransitRoutingBaseAttributes = {
     minWaitingTimeSeconds?: number;
     maxTransferTravelTimeSeconds?: number;
+    maxNumberOfTransfers?: number;
     maxAccessEgressTravelTimeSeconds?: number;
     maxWalkingOnlyTravelTimeSeconds?: number;
     maxFirstWaitingTimeSeconds?: number;

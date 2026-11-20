@@ -31,6 +31,10 @@ type TrRoutingBaseQueryOptions = {
      */
     maxEgressTravelTime?: number;
     /**
+     * Maximum number of transfers
+     */
+    maxNumberOfTransfers?: number;
+    /**
      * Maximum transfer time, in seconds
      */
     maxTransferTravelTime?: number;
@@ -202,6 +206,7 @@ export interface TrRoutingWithAlternativeResult {
 
 export type TrRoutingNoRoutingReason =
     | 'NO_ROUTING_FOUND'
+    | 'NO_ROUTING_WITHIN_MAX_NUMBER_OF_TRANSFERS'
     | 'NO_ACCESS_AT_ORIGIN'
     | 'NO_ACCESS_AT_DESTINATION'
     | 'NO_ACCESS_AT_ORIGIN_AND_DESTINATION'

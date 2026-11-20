@@ -119,6 +119,13 @@ export const validateAndCreateTripRoutingAttributes = (
             'tripRoutingQueryAttributes'
         )
     );
+    // errors.push(
+    //     ...ParamsValidatorUtils.isInteger(
+    //         'maxNumberOfTransfers',
+    //         partialAttributes.maxNumberOfTransfers,
+    //         'tripRoutingQueryAttributes'
+    //     )
+    // );
     errors.push(
         ...ParamsValidatorUtils.isPositiveInteger(
             'maxTransferTravelTimeSeconds',
@@ -188,6 +195,7 @@ export const validateAndCreateTripRoutingAttributes = (
         waypoints: partialAttributes.waypoints,
         withAlternatives: partialAttributes.withAlternatives || false,
         minWaitingTimeSeconds: partialAttributes.minWaitingTimeSeconds,
+        maxNumberOfTransfers: partialAttributes.maxNumberOfTransfers,
         maxTransferTravelTimeSeconds: partialAttributes.maxTransferTravelTimeSeconds,
         maxAccessEgressTravelTimeSeconds: partialAttributes.maxAccessEgressTravelTimeSeconds,
         maxWalkingOnlyTravelTimeSeconds: partialAttributes.maxWalkingOnlyTravelTimeSeconds,
