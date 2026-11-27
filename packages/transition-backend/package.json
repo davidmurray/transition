@@ -18,7 +18,7 @@
         "migrate-test:rollback": "NODE_ENV=test knex migrate:down --knexfile lib/config/knexfile.js",
         "start": "yarn node --max-old-space-size=4096 lib/server.js",
         "start:tracing": "yarn node -r ../../tracing.js  --max-old-space-size=4096 lib/server.js",
-        "start:debug": "DEBUG=\"express:*\" yarn node --trace-warnings --max-old-space-size=4096 lib/server.js",
+        "start:debug": "DEBUG=\"express:*\" yarn node --inspect=0.0.0.0:9229 --trace-warnings --max-old-space-size=4096 lib/server.js",
         "start:test": "NODE_ENV=test DEBUG=\"express:*\" yarn node --trace-warnings --max-old-space-size=4096 lib/server.js",
         "test": "NODE_ENV=test jest --config=jest.config.js",
         "test:unit": "NODE_ENV=test jest --config=jest.config.js",

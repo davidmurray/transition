@@ -85,7 +85,7 @@ export const getAttributesOrDefault = (attributes: Partial<AccessibilityMapAttri
         locationGeojson: attributes.locationGeojson,
         minWaitingTimeSeconds: attributes.minWaitingTimeSeconds || 180,
         maxAccessEgressTravelTimeSeconds: attributes.maxAccessEgressTravelTimeSeconds || 900,
-        maxNumberOfTransfers: attributes.maxNumberOfTransfers || -1,
+        maxNumberOfTransfers: attributes.maxNumberOfTransfers ?? -1, // 0 is a valid value, so we must use the nullish coalescing operator
         maxTransferTravelTimeSeconds: attributes.maxTransferTravelTimeSeconds || 900,
         walkingSpeedMps: attributes.walkingSpeedMps || 5.0 / 3.6,
         walkingSpeedFactor: attributes.walkingSpeedFactor,

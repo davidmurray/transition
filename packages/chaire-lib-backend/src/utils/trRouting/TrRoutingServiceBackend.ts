@@ -87,7 +87,7 @@ class TrRoutingServiceBackend {
         if (parameters.maxEgressTravelTime) {
             trRoutingQueryArray.push(`max_egress_travel_time=${parameters.maxEgressTravelTime}`);
         }
-        if (parameters.maxNumberOfTransfers) {
+        if (parameters.maxNumberOfTransfers !== undefined && parameters.maxNumberOfTransfers >= 0) {
             trRoutingQueryArray.push(`max_number_of_transfers=${parameters.maxNumberOfTransfers}`);
         }
         if (parameters.maxTransferTravelTime) {
@@ -120,7 +120,7 @@ class TrRoutingServiceBackend {
         if (parameters.maxEgressTravelTime) {
             trRoutingQueryArray.push(`max_egress_travel_time=${parameters.maxEgressTravelTime}`);
         }
-        if (parameters.maxNumberOfTransfers) {
+        if (parameters.maxNumberOfTransfers !== undefined && parameters.maxNumberOfTransfers >= 0) {
             trRoutingQueryArray.push(`max_number_of_transfers=${parameters.maxNumberOfTransfers}`);
         }
         if (parameters.maxTransferTravelTime) {
